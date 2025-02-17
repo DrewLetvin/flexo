@@ -74,16 +74,16 @@ class ToolRegistry:
                 raise
 
         # Initialize RAG tool (disabled by default)
-        # rag_config = self.config.get("rag_tool")
-        # if rag_config:
-        #     logger.debug("Initializing RAG tool with config: %s", rag_config)
-        #     try:
-        #         rag_tool = RAGTool(config=rag_config)
-        #         self.register_tool(rag_tool)
-        #         logger.debug("RAG tool successfully registered")
-        #     except Exception as e:
-        #         logger.error("Failed to initialize RAG tool: %s", str(e))
-        #         raise
+        rag_config = self.config.get("rag_tool")
+        if rag_config:
+            logger.debug("Initializing RAG tool with config: %s", rag_config)
+            try:
+                rag_tool = RAGTool(config=rag_config)
+                self.register_tool(rag_tool)
+                logger.debug("RAG tool successfully registered")
+            except Exception as e:
+                logger.error("Failed to initialize RAG tool: %s", str(e))
+                raise
 
         logger.info("Tool registration complete. Registered tools: %s",
                     ", ".join(self.tools.keys()))

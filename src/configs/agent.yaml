@@ -53,7 +53,7 @@ models_config:
     # max_tokens: 4000
     # temperature: 0.7
 
-# Tool Configurations
+# Tool Configurationsx
 tools_config:
   # Weather API Integration
   weather_tool:
@@ -68,7 +68,7 @@ tools_config:
   rag_tool:
     connector_config:
       connector_type: elasticsearch
-      index_name: my_index
+      index_name: "capital-improvement-guide-elser-index"
       api_key_env: ES_API_KEY
       endpoint_env: ES_ENDPOINT
       top_k: 5
@@ -88,7 +88,7 @@ tools_config:
           field: vector
           query_vector_builder:
             text_embedding:
-              model_id: thenlper__gte-base
+              model_id: thenlper__gte-base #.elser_model_2
               model_text: "$USER_INPUT"
           k: 100
           num_candidates: 150

@@ -23,7 +23,7 @@ from src.tools.core.tool_registry import ToolRegistry
 from src.database import ElasticsearchClient, ElasticQueryBuilder
 
 
-# @ToolRegistry.register_tool()
+@ToolRegistry.register_tool()
 class RAGTool(BaseTool):
     name = "rag_tool"
 
@@ -32,9 +32,9 @@ class RAGTool(BaseTool):
         self.config = config or {}
         self.strict = True
 
-        self.description = ("Tool used to retrieve information from the 'Medicare & You 2025' handbook "
+        self.description = ("Tool used to retrieve information from the 'North Carolina Capital Planning and Finance Guide"
                             "using natural language search. Use this tool when you need information about "
-                            "Medicare coverage, enrollment, costs, and benefits.")
+                            "North Carolina Community Colleges, capital planning, business processes and functions.")
 
         self.parameters = {
             'type': 'object',
