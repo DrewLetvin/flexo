@@ -63,9 +63,10 @@ class RAGTool(BaseTool):
         self.elasticsearch_timeout = self.config.get('timeouts', {}).get('elasticsearch_timeout', 30)
         self.max_retries = elasticsearch_config.get('max_retries', 3)
         self.index_name = elasticsearch_config.get('index_name', 'medicare_handbook_2025')
+        self.content_field = elasticsearch_config.get('content_field', 'text')
 
     async def execute(self, context: Optional[StreamContext] = None, **kwargs) -> ToolResponse:
-        """Executes the RAG (Retrieval-Augmented Generation) tool to retrieve Medicare-related content.
+        """Executes the RAG (Retrieval-Augmented Generation) tool to retrieve North Carolina Capital Planning and Finance Guide content.
 
         This method performs a search query against an Elasticsearch index to retrieve relevant
         Medicare documentation based on the provided query string.
@@ -75,7 +76,7 @@ class RAGTool(BaseTool):
                 Defaults to None.
             **kwargs: Arbitrary keyword arguments.
                 Required:
-                    query (str): The search query string to find Medicare-related content.
+                    query (str): The search query string to find related content.
 
         Returns:
             ToolResponse: A structured response containing:
@@ -96,7 +97,7 @@ class RAGTool(BaseTool):
         if not query:
             raise ValueError("The 'query' parameter is required.")
 
-        self.logger.info("Executing RAG Tool with query about Medicare: %s", query)
+        self.logger.info("Executing RAG Tool with query: %s", query)
 
         # Retrieve content from Elasticsearch
         retrieved_documents = await self._retrieve_content(
@@ -125,10 +126,10 @@ class RAGTool(BaseTool):
             RuntimeError: If retrieval fails.
             asyncio.TimeoutError: If query times out.
         """
-        self.logger.info("Querying Elasticsearch for Medicare handbook content")
+        self.logger.info("Querying Elasticsearch for content")
         top_k = top_k if top_k is not None else self.top_k
         query_body = self.query_builder.get_query(user_input)
-        self.logger.debug(f"Elastic query body for Medicare query: {json.dumps(query_body)}")
+        self.logger.info(f"Elastic query body for Medicare query: {json.dumps(query_body)}")
         query_results = None
 
         # Perform Elasticsearch query with retries and timeout
@@ -145,13 +146,15 @@ class RAGTool(BaseTool):
                     raise  # Raise the exception if max retries reached
 
         if query_results is None:
-            raise RuntimeError("Failed to retrieve Elasticsearch query results for Medicare handbook.")
+            raise RuntimeError("Failed to retrieve Elasticsearch query results.")
 
         # Extract and sort hits
-        extracted_hits = self.extract_and_sort_hits(query_results, "text")
+        extracted_hits = self.extract_and_sort_hits(query_results, self.content_field) # replace text with query 'fields'
 
         # Concatenate up to top_k results
         retrieved_content = "\n\n".join(extracted_hits[:top_k]) + "\n\n" + self. get_tool_specific_instruction()
+
+        self.logger.info(f"Retrieved Context:\n\n{retrieved_content}\n")
         return retrieved_content
 
     @staticmethod
@@ -204,19 +207,19 @@ class RAGTool(BaseTool):
         Returns:
             str: Formatted content with context header.
         """
+        self.logger.info(f"Parse output recieved: {output}")
         if not output:
-            return "No relevant information found in the Medicare & You 2025 handbook."
+            return "No relevant information found in the North Carolina Capital Planning and Finance Guide."
 
         # Return the output with a context header
         return (
-            "## Retrieved Content from 'Medicare & You 2025' Handbook ##\n\n"
+            "## Retrieved Content from 'North Carolina Capital Planning and Finance Guide' ##\n\n"
             f"{output}\n\n"
-            "Note: This content is retrieved directly from the Medicare & You 2025 handbook. "
-            "For the most up-to-date information, please visit Medicare.gov or call 1-800-MEDICARE."
+            "Note: This content is retrieved directly from the North Carolina Capital Planning and Finance Guide. "
         )
 
     def get_tool_specific_instruction(self) -> str:
         return (
-            "This tool searches through the content of the 'Medicare & You 2025' "
+            "This tool searches through the content of the 'North Carolina Capital Planning and Finance Guide' "
             "handbook. Please be concise and direct in your answers, basing them off of the retrieved content."
         )
